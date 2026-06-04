@@ -1,0 +1,427 @@
+/* input.html 用スタイル */
+
+.input-main {
+  display: flex;
+  gap: 20px;
+  min-height: 0;
+  flex: 1;
+}
+
+.input-sidebar {
+  width: 30%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  overflow-y: auto;
+}
+
+.calendar-section {
+  flex: 1;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+/* フォーム要素 */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-label {
+  font-weight: 600;
+  color: var(--text);
+  font-size: 0.95rem;
+}
+
+.form-select,
+.form-input,
+.form-textarea {
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  color: var(--text);
+  background: var(--bg);
+}
+
+.form-select:focus,
+.form-input:focus,
+.form-textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  background: var(--surface);
+}
+
+.form-select {
+  cursor: pointer;
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.selected-month {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  padding: 8px 0;
+}
+
+.input-button,
+.register-button,
+.cancel-button {
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+  margin-top: auto;
+}
+
+.input-button {
+  margin-top: 0;
+}
+
+.cancel-button {
+  margin-top: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+
+.input-button:hover:not(:disabled),
+.register-button:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.cancel-button:hover:not(:disabled) {
+  background: #ff7777;
+  border-color: #ff7777;
+  color: white;
+}
+
+.input-button:disabled,
+.register-button:disabled,
+.cancel-button:disabled {
+  background: var(--border);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+/* カレンダーグリッド */
+.calendar-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.calendar-header {
+  text-align: center;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 12px;
+}
+
+.calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.weekday-label {
+  text-align: center;
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 8px 4px;
+  color: var(--muted);
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+}
+
+.calendar-cell {
+  aspect-ratio: 1 / 1;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px;
+  cursor: default;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  font-size: 0.85rem;
+  transition: background 0.2s ease, border-color 0.2s ease;
+  background: var(--surface-strong);
+  overflow: hidden;
+  text-align: center;
+}
+
+.calendar-cell:hover {
+  border-color: var(--border);
+}
+
+.calendar-cell.other-month {
+  background: var(--bg);
+  color: var(--muted);
+  cursor: default;
+}
+
+.calendar-cell.other-month:hover {
+  border-color: var(--border);
+  background: var(--bg);
+}
+
+.calendar-cell.weekend-sun {
+  background: #dd8888;
+  color: white;
+}
+
+.calendar-cell.weekend-sat {
+  background: #aaaaaa;
+  color: white;
+}
+
+.calendar-cell.weekend-sun:hover,
+.calendar-cell.weekend-sat:hover {
+  border-color: var(--text);
+}
+
+.calendar-cell.registered {
+  border: 2px solid var(--primary);
+  background: #e7efff;
+}
+
+.calendar-cell.status-planned {
+  background: #77eeee;
+  color: var(--text);
+}
+
+.calendar-cell.status-confirmed {
+  background: #cceecc;
+  color: var(--text);
+}
+
+.calendar-cell.selected {
+  border: 2px solid var(--primary);
+  background: rgba(63, 113, 255, 0.2);
+}
+
+.cell-day {
+  font-weight: 600;
+  font-size: 1rem;
+  margin-bottom: 2px;
+}
+
+.cell-time {
+  font-size: 0.7rem;
+  line-height: 1.2;
+  color: inherit;
+}
+
+.cell-location {
+  font-size: 0.7rem;
+  line-height: 1.2;
+  color: inherit;
+}
+
+/* モーダル（既存スタイルの調整） */
+.modal-card {
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-content {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 12px;
+}
+
+.modal-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modal-content::-webkit-scrollbar-track {
+  background: var(--bg);
+  border-radius: 4px;
+}
+
+.modal-content::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+
+.modal-content::-webkit-scrollbar-thumb:hover {
+  background: var(--muted);
+}
+
+.modal-save-button {
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 20px;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  margin-top: 16px;
+  transition: opacity 0.2s ease;
+  flex-shrink: 0;
+}
+
+.modal-save-button:hover {
+  opacity: 0.9;
+}
+
+.modal-action-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.modal-action-row .modal-save-button {
+  margin-top: 0;
+}
+
+.planned-button {
+  background: #3f8f9f;
+}
+
+.confirmed-button {
+  background: #46965c;
+}
+
+.confirm-modal {
+  width: min(400px, 100%);
+}
+
+.confirm-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+.confirm-button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.confirm-yes {
+  background: var(--primary);
+  color: white;
+}
+
+.confirm-yes:hover {
+  opacity: 0.9;
+}
+
+.confirm-no {
+  background: var(--border);
+  color: var(--text);
+}
+
+.confirm-no:hover {
+  opacity: 0.7;
+}
+
+.cancel-execute-button {
+  background: #ff7777;
+  color: white;
+}
+
+.cancel-execute-button:hover {
+  opacity: 0.9;
+}
+
+/* モーダル内フォーム要素 */
+.field-label {
+  font-weight: 700;
+  margin-bottom: 4px;
+  display: block;
+  color: var(--text);
+}
+
+.field-value {
+  background: var(--bg);
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  margin: 0;
+  color: var(--text);
+}
+
+.form-input,
+.form-textarea {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* レスポンシブ */
+@media (max-width: 1024px) {
+  .input-main {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .input-sidebar {
+    width: 100%;
+    max-height: 200px;
+  }
+
+  .calendar-section {
+    flex: 1;
+  }
+
+  .calendar-cell {
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 720px) {
+  .input-sidebar {
+    max-height: none;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .calendar-grid {
+    gap: 4px;
+  }
+
+  .calendar-cell {
+    padding: 4px;
+    font-size: 0.65rem;
+  }
+}

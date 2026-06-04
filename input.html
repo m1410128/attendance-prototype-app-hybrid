@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>社用車 予約管理表</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/layout.css" />
+  <link rel="stylesheet" href="css/schedule.css" />
+  <link rel="stylesheet" href="css/input.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+      <div>
+        <h1>社用車 予約管理表（入力フォーム）</h1>
+        <p class="app-description">社員ごとの勤務状況をあらかじめ入力してもらい、社用車の使用状況を管理します。</p>
+      </div>
+      <div class="month-area">
+        <a href="index.html" class="month-select-button">管理者ページへ戻る</a>
+      </div>
+    </header>
+
+    <main class="input-main">
+      <aside class="input-sidebar">
+        <div class="form-group">
+          <label for="employeeSelect" class="form-label">社員名</label>
+          <select id="employeeSelect" class="form-select">
+            <option value="">選択してください</option>
+            <option value="社員A">社員A</option>
+            <option value="社員B">社員B</option>
+            <option value="社員C">社員C</option>
+            <option value="社員D">社員D</option>
+            <option value="社員E">社員E</option>
+            <option value="社員F">社員F</option>
+            <option value="社員G">社員G</option>
+            <option value="社員H">社員H</option>
+            <option value="社員I">社員I</option>
+            <option value="社員J">社員J</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="monthSelect" class="form-label">月を選択</label>
+          <button type="button" id="monthSelectButton" class="month-select-button">月を選択</button>
+          <p class="selected-month" id="selectedMonthLabel"></p>
+        </div>
+
+        <button type="button" id="inputButton" class="input-button" disabled>入力</button>
+        <button type="button" id="registerButton" class="register-button" disabled>登録</button>
+        <button type="button" id="cancelButton" class="cancel-button" disabled>取消</button>
+      </aside>
+
+      <section class="calendar-section" id="calendarSection">
+        <!-- カレンダーはここに動的に生成される -->
+      </section>
+    </main>
+  </div>
+
+  <!-- 月選択モーダル -->
+  <div class="modal-overlay hidden" id="monthModalOverlay">
+    <div class="modal-card month-selection-card" role="dialog" aria-modal="true" aria-labelledby="monthModalTitle">
+      <button class="modal-close" id="monthModalCloseButton">×</button>
+      <h2 id="monthModalTitle">月を選択</h2>
+      <div class="month-list" id="monthListContainer"></div>
+    </div>
+  </div>
+
+  <!-- 勤務情報入力モーダル -->
+  <div class="modal-overlay hidden" id="detailModalOverlay">
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <button class="modal-close" id="modalCloseButton">×</button>
+      <h2 id="modalTitle">勤務情報入力</h2>
+      <div class="modal-content" id="modalContent">
+        <div class="form-group">
+          <p class="field-label">社員名</p>
+          <p class="field-value" id="modalEmployeeName"></p>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="modalStartDate" class="field-label">開始日</label>
+            <input type="date" id="modalStartDate" class="form-input">
+          </div>
+          <div class="form-group">
+            <label for="modalEndDate" class="field-label">終了日</label>
+            <input type="date" id="modalEndDate" class="form-input">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="modalLocation" class="field-label">勤務地</label>
+          <input type="text" id="modalLocation" class="form-input" placeholder="例：本社、在宅">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="modalStartTime" class="field-label">開始時刻</label>
+            <input type="time" id="modalStartTime" class="form-input" step="60">
+          </div>
+          <div class="form-group">
+            <label for="modalEndTime" class="field-label">終了時刻</label>
+            <input type="time" id="modalEndTime" class="form-input" step="60">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="modalRemarks" class="field-label">備考</label>
+          <textarea id="modalRemarks" class="form-textarea" placeholder="特記事項があれば記入"></textarea>
+        </div>
+        <div class="modal-action-row">
+          <button type="button" id="modalPlannedButton" class="modal-save-button planned-button">予定</button>
+          <button type="button" id="modalConfirmedButton" class="modal-save-button confirmed-button">確定</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 取消モーダル -->
+  <div class="modal-overlay hidden" id="cancelModalOverlay">
+    <div class="modal-card confirm-modal" role="dialog" aria-modal="true" aria-labelledby="cancelModalTitle">
+      <button class="modal-close" id="cancelModalCloseButton">×</button>
+      <h2 id="cancelModalTitle">勤務内容の取消</h2>
+      <div class="modal-content">
+        <div class="form-group">
+          <label for="cancelDate" class="field-label">取消日</label>
+          <input type="date" id="cancelDate" class="form-input">
+        </div>
+        <div class="confirm-buttons">
+          <button type="button" id="cancelExecuteButton" class="confirm-button cancel-execute-button">取消</button>
+          <button type="button" id="cancelBackButton" class="confirm-button confirm-no">戻る</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 確認ダイアログ -->
+  <div class="modal-overlay hidden" id="confirmModalOverlay">
+    <div class="modal-card confirm-modal" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+      <h2 id="confirmTitle">確認</h2>
+      <p id="confirmMessage">この内容で登録しますか？</p>
+      <div class="confirm-buttons">
+        <button type="button" id="confirmYesButton" class="confirm-button confirm-yes">はい</button>
+        <button type="button" id="confirmNoButton" class="confirm-button confirm-no">いいえ</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/input.js"></script>
+</body>
+</html>

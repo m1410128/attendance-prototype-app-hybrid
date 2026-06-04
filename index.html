@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>勤務管理アプリ（管理者用）</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/layout.css" />
+  <link rel="stylesheet" href="css/schedule.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+      <div>
+        <h1>勤務管理アプリ（管理者用）</h1>
+        <p class="app-description">社員の月間勤務を確認し、セルをタップすると勤務情報を表示します。</p>
+      </div>
+      <div class="month-area">
+        <a href="input.html" class="month-select-button">入力フォームへ</a>
+        <button type="button" class="month-select-button" id="openMonthModalButton">月を選択</button>
+        <p class="current-month" id="currentMonthLabel"></p>
+      </div>
+    </header>
+
+    <main>
+      <section class="schedule-panel">
+        <div class="schedule-meta">
+          <p>行：社員名（社員A〜社員J）、列：日付。モバイルは横スクロールとカード表示に対応。</p>
+        </div>
+        <div class="table-wrapper" id="scheduleWrapper">
+          <table class="schedule-table" id="scheduleTable">
+            <thead></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal-overlay hidden" id="detailModalOverlay">
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <button class="modal-close" id="modalCloseButton">×</button>
+      <h2 id="modalTitle">勤務情報</h2>
+      <div class="modal-content" id="modalContent"></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay hidden" id="monthModalOverlay">
+    <div class="modal-card month-selection-card" role="dialog" aria-modal="true" aria-labelledby="monthModalTitle">
+      <button class="modal-close" id="monthModalCloseButton">×</button>
+      <h2 id="monthModalTitle">月を選択</h2>
+      <div class="month-list" id="monthListContainer"></div>
+    </div>
+  </div>
+
+  <script src="js/script.js"></script>
+</body>
+</html>
