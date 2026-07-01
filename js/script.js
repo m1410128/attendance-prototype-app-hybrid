@@ -1,11 +1,3 @@
-const monthList = Array.from({ length: 12 }, (_, index) => {
-  const monthNumber = index + 1;
-  return {
-    key: `2026-${monthNumber.toString().padStart(2, '0')}`,
-    label: `2026年${monthNumber}月`
-  };
-});
-
 const employeeNames = [
   '社員A', '社員B', '社員C', '社員D', '社員E',
   '社員F', '社員G', '社員H', '社員I', '社員J'
@@ -28,7 +20,41 @@ const sampleSchedule = {
   }
 };
 
-let activeMonthKey = monthList[0].key;
+const today = new Date();
+const currentYear = today.getFullYear();
+const currentMonth = today.getMonth() + 1; // 月は0から始まるため+1
+
+// 祝日設定 テスト用 アナログだけど…
+const holidaySet = new Set([
+  '2026-01-01', // 元日
+  '2026-01-12', // 成人の日
+  '2026-02-11', // 建国記念の日
+  '2026-02-23', // 天皇誕生日
+  '2026-03-20', // 春分の日
+  '2026-04-29', // 昭和の日
+  '2026-05-03', // 憲法記念日
+  '2026-05-04', // みどりの日
+  '2026-05-05', // こどもの日
+  '2026-05-06', // 振替休日
+  '2026-07-20', // 海の日
+  '2026-08-11', // 山の日
+  '2026-09-21', // 秋分の日
+  '2026-09-22', // 振替休日
+  '2026-10-12', // スポーツの日
+  '2026-11-03', // 文化の日
+  '2026-11-23', // 勤労感謝の日
+]);
+
+const monthList = Array.from({ length: 12 }, (_, index) => {
+  const monthNumber = index + 1;
+  return {
+    key: `${currentYear}-${String(monthNumber).padStart(2, '0')}`,
+    label: `${currentYear}年${monthNumber}月`
+  };
+});
+
+let activeMonthKey = `${currentYear}-${String(currentMonth).padStart(2, '0')}`;
+
 let scheduleData = {};
 
 const currentMonthLabel = document.getElementById('currentMonthLabel');
@@ -116,7 +142,7 @@ function closeMonthModal() {
   monthModalOverlay.classList.add('hidden');
 }
 
-function createCell(employee, day, weekday) {
+function createCell(employee, day, weekday, isHoliday) {
   const cell = document.createElement('td');
   const entry = getEntry(employee, day);
 
@@ -127,11 +153,11 @@ function createCell(employee, day, weekday) {
     cell.innerHTML = `<div class="cell-empty">-</div>`;
     cell.classList.add('cell-empty');
   }
-
-  if (weekday === '土') {
+  if (isHoliday) {
+    cell.classList.add('weekday-holiday');
+  } else if (weekday === '土') {
     cell.classList.add('weekday-sat');
-  }
-  if (weekday === '日') {
+  } else if (weekday === '日') {
     cell.classList.add('weekday-sun');
   }
 
@@ -150,32 +176,45 @@ function renderScheduleTable() {
   thead.innerHTML = '';
   tbody.innerHTML = '';
 
+  // ===== ヘッダー行の作成 =====
   const headerRow = document.createElement('tr');
   const firstHeader = document.createElement('th');
-  firstHeader.textContent = '社員名';
+  firstHeader.textContent = '日付';
   headerRow.appendChild(firstHeader);
 
-  for (let day = 1; day <= daysInMonth; day += 1) {
-    const weekday = getWeekday(year, month, day);
+  employeeNames.forEach((employee) => {
     const th = document.createElement('th');
-    th.innerHTML = `${day}<span class="weekday">${weekday}</span>`;
-    if (weekday === '土') th.classList.add('weekday-sat');
-    if (weekday === '日') th.classList.add('weekday-sun');
+    th.textContent = employee;
     headerRow.appendChild(th);
-  }
+  });
+
   thead.appendChild(headerRow);
 
-  employeeNames.forEach((employee) => {
+  // ===== 本体 =====
+  for (let day = 1; day <= daysInMonth; day += 1) {
+    const holidayKey = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    const isHoliday = holidaySet.has(holidayKey);
+    const weekday = getWeekday(year, month, day);
     const row = document.createElement('tr');
-    const nameCell = document.createElement('th');
-    nameCell.textContent = employee;
-    row.appendChild(nameCell);
-
-    for (let day = 1; day <= daysInMonth; day += 1) {
-      row.appendChild(createCell(employee, String(day), getWeekday(year, month, day)));
+    const dayCell = document.createElement('th');
+    dayCell.innerHTML = `${day}<span class="weekday">${weekday}</span>`;
+    if (isHoliday) {
+      dayCell.classList.add('weekday-holiday');
+    } else if (weekday === '土') {
+      dayCell.classList.add('weekday-sat');
+    } else if (weekday === '日') {
+      dayCell.classList.add('weekday-sun');
     }
+    row.appendChild(dayCell);
+
+    employeeNames.forEach((employee) => {
+      row.appendChild(
+        createCell(employee, String(day), weekday, isHoliday)
+      );
+    });
+
     tbody.appendChild(row);
-  });
+  }
 }
 
 function openDetailModal(employee, day, entry) {

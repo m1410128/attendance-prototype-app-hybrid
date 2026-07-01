@@ -63,6 +63,11 @@
   color: var(--muted);
 }
 
+.schedule-table th.weekday-holiday,
+.schedule-table td.weekday-holiday {
+  background: #dd8888;
+}
+
 .schedule-table th.weekday-sat,
 .schedule-table td.weekday-sat {
   background: #aaaaaa;
