@@ -11,6 +11,27 @@ const employeeNames = [
   '社員F', '社員G', '社員H', '社員I', '社員J'
 ];
 
+// 祝日設定 テスト用 アナログだけど…
+const holidaySet = new Set([
+  '2026-01-01', // 元日
+  '2026-01-12', // 成人の日
+  '2026-02-11', // 建国記念の日
+  '2026-02-23', // 天皇誕生日
+  '2026-03-20', // 春分の日
+  '2026-04-29', // 昭和の日
+  '2026-05-03', // 憲法記念日
+  '2026-05-04', // みどりの日
+  '2026-05-05', // こどもの日
+  '2026-05-06', // 振替休日
+  '2026-07-20', // 海の日
+  '2026-08-11', // 山の日
+  '2026-09-21', // 秋分の日
+  '2026-09-22', // 振替休日
+  '2026-10-12', // スポーツの日
+  '2026-11-03', // 文化の日
+  '2026-11-23', // 勤労感謝の日
+]);
+
 // DOM要素
 const employeeSelect = document.getElementById('employeeSelect');
 const monthSelectButton = document.getElementById('monthSelectButton');
@@ -59,6 +80,21 @@ function init() {
   loadScheduleData();
   setupEventListeners();
   renderMonthSelector();
+}
+
+// ハンバーガーメニュー
+const menuButton = document.getElementById('menuButton');
+const menuPanel = document.getElementById('menuPanel');
+
+if (menuButton && menuPanel && menuOverlay) {
+  menuButton.addEventListener('click', () => {
+    menuPanel.classList.toggle('hidden');
+    menuOverlay.classList.toggle('hidden');
+  });
+  menuOverlay.addEventListener('click', () => {
+    menuPanel.classList.add('hidden');
+    menuOverlay.classList.add('hidden');
+  });
 }
 
 function loadScheduleData() {
@@ -202,12 +238,20 @@ function renderCalendar() {
   // 当月のセル
   for (let day = 1; day <= daysInMonth; day++) {
     const weekday = getWeekday(year, month, day);
+    const holidayKey = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    const isHoliday = holidaySet.has(holidayKey);
+
     let cellClass = 'calendar-cell';
     let cellContent = `<div class="cell-day">${day}</div>`;
 
-    // 土日の色分け
-    if (weekday === '日') cellClass += ' weekend-sun';
-    if (weekday === '土') cellClass += ' weekend-sat';
+    // 土日祝の色分け
+    if (isHoliday) {
+      cellClass += ' weekday-holiday';
+    } else if (weekday === '日') {
+      cellClass += ' weekend-sun';
+    } else if (weekday === '土') {
+      cellClass += ' weekend-sat';
+    }
 
     // 登録済みデータを確認
     const entry = getScheduleEntry(selectedEmployee, day);
@@ -382,7 +426,7 @@ function closeConfirmDialog() {
 function confirmRegister() {
   // localStorage に保存
   localStorage.setItem(STORAGE_KEY, JSON.stringify(scheduleData));
-  
+
   closeConfirmDialog();
 
   // ユーザーへの確認メッセージ

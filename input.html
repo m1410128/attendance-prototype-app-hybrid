@@ -19,12 +19,18 @@
         <p class="app-description">社員ごとの勤務状況をあらかじめ入力してもらい、社用車の使用状況を管理します。</p>
       </div>
       <div class="month-area">
-        <a href="index.html" class="month-select-button">管理者ページへ戻る</a>
-        <button onclick="google.script.run.testCall()">
-          テスト
-        </button>
+        <button class="menu-button" id="menuButton">☰</button>
       </div>
     </header>
+
+    <div class="menu-overlay hidden" id="menuOverlay"></div>
+    
+    <nav class="menu-panel hidden" id="menuPanel">
+      <a href="index.html" class="menu-item">予約表</a>
+      <a href="input.html" class="menu-item current">入力画面</a>
+    </nav>
+
+
 
     <main class="input-main">
       <aside class="input-sidebar">

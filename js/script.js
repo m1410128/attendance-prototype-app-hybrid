@@ -67,6 +67,23 @@ const modalOverlay = document.getElementById('detailModalOverlay');
 const modalCloseButton = document.getElementById('modalCloseButton');
 const modalContent = document.getElementById('modalContent');
 
+
+// ハンバーガーメニュー
+const menuButton = document.getElementById('menuButton');
+const menuPanel = document.getElementById('menuPanel');
+const menuOverlay = document.getElementById('menuOverlay');
+
+if (menuButton && menuPanel && menuOverlay) {
+  menuButton.addEventListener('click', () => {
+    menuPanel.classList.toggle('hidden');
+    menuOverlay.classList.toggle('hidden');
+  });
+  menuOverlay.addEventListener('click', () => {
+    menuPanel.classList.add('hidden');
+    menuOverlay.classList.add('hidden');
+  });
+}
+
 function loadScheduleData() {
   const stored = localStorage.getItem('workSchedule');
   scheduleData = stored ? JSON.parse(stored) : {};
@@ -142,6 +159,13 @@ function closeMonthModal() {
   monthModalOverlay.classList.add('hidden');
 }
 
+
+function getStatusClass(entry) {
+  if (entry.status === 'planned') return ' status-planned';
+  if (entry.status === 'confirmed') return ' status-confirmed';
+  return '';
+}
+
 function createCell(employee, day, weekday, isHoliday) {
   const cell = document.createElement('td');
   const entry = getEntry(employee, day);
@@ -149,6 +173,11 @@ function createCell(employee, day, weekday, isHoliday) {
   if (entry) {
     cell.innerHTML = `<div class="cell-time">${formatTimeRange(entry)}</div><div class="cell-location">${entry.location || '-'}</div>`;
     cell.classList.add('cell-filled');
+
+    const statusClass = getStatusClass(entry).trim();
+    if (statusClass) {
+      cell.classList.add(statusClass);
+    }
   } else {
     cell.innerHTML = `<div class="cell-empty">-</div>`;
     cell.classList.add('cell-empty');
@@ -167,6 +196,7 @@ function createCell(employee, day, weekday, isHoliday) {
 
   return cell;
 }
+
 
 function renderScheduleTable() {
   const daysInMonth = getDaysInMonth(activeMonthKey);

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -8,6 +9,7 @@
   <link rel="stylesheet" href="css/layout.css" />
   <link rel="stylesheet" href="css/schedule.css" />
 </head>
+
 <body>
   <div class="app-shell">
     <header class="app-header">
@@ -16,11 +18,19 @@
         <p class="app-description">社員の月間勤務を確認し、セルをタップすると勤務情報を表示します。</p>
       </div>
       <div class="month-area">
-        <a href="input.html" class="month-select-button">入力フォームへ</a>
+        <button class="menu-button" id="menuButton">☰</button>
+
         <button type="button" class="month-select-button" id="openMonthModalButton">月を選択</button>
         <p class="current-month" id="currentMonthLabel"></p>
       </div>
     </header>
+
+    <div class="menu-overlay hidden" id="menuOverlay"></div>
+
+    <nav class="menu-panel hidden" id="menuPanel">
+      <a href="index.html" class="menu-item current">予約表</a>
+      <a href="input.html" class="menu-item">入力画面</a>
+    </nav>
 
     <main>
       <section class="schedule-panel">
@@ -55,4 +65,5 @@
 
   <script src="js/script.js"></script>
 </body>
+
 </html>

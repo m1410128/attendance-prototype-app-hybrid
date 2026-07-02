@@ -42,6 +42,14 @@ main {
   max-width: 640px;
 }
 
+.menu-button {
+  padding: 10px;
+  border: 1px solid #dddddd;
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+}
+
 .month-area {
   display: flex;
   flex-wrap: wrap;

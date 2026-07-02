@@ -195,6 +195,11 @@
   background: var(--bg);
 }
 
+.calendar-cell.weekday-holiday {
+  background: #dd8888;
+  color: white;
+}
+
 .calendar-cell.weekend-sun {
   background: #dd8888;
   color: white;
