@@ -206,6 +206,7 @@ function getStatusClass(entry) {
   return '';
 }
 
+// カレンダーを作る関数
 function renderCalendar() {
   if (!selectedEmployee || !selectedMonthKey) {
     calendarSection.innerHTML = '';
@@ -237,9 +238,9 @@ function renderCalendar() {
 
   // 当月のセル
   for (let day = 1; day <= daysInMonth; day++) {
+    const dateKey = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     const weekday = getWeekday(year, month, day);
-    const holidayKey = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    const isHoliday = holidaySet.has(holidayKey);
+    const isHoliday = holidaySet.has(dateKey);
 
     let cellClass = 'calendar-cell';
     let cellContent = `<div class="cell-day">${day}</div>`;
@@ -261,7 +262,7 @@ function renderCalendar() {
       cellContent += `<div class="cell-location">${entry.location || '-'}</div>`;
     }
 
-    html += `<div class="${cellClass}">${cellContent}</div>`;
+    html += `<div class="${cellClass}" data-date="${dateKey}">${cellContent}</div>`;
   }
 
   // 翌月の埋め込みセル
@@ -275,6 +276,11 @@ function renderCalendar() {
   html += `</div>`;
 
   calendarSection.innerHTML = html;
+  document.querySelectorAll('.calendar-cell[data-date]').forEach((cell) => {
+    cell.addEventListener('click', () => {
+      openDetailModal(cell.dataset.date);
+    });
+  });
 }
 
 function getScheduleEntry(employee, day) {
@@ -293,13 +299,15 @@ function getDefaultDateForSelectedMonth() {
   return selectedMonthKey ? `${selectedMonthKey}-01` : '';
 }
 
-function openDetailModal() {
+// 入力フォームのモーダルを作る関数
+function openDetailModal(dateKey) {
   if (!selectedEmployee || !selectedMonthKey) return;
 
   const defaultDate = getDefaultDateForSelectedMonth();
   modalEmployeeName.textContent = selectedEmployee;
-  modalStartDate.value = defaultDate;
-  modalEndDate.value = defaultDate;
+  // 日付はカレンダーでクリックした値に設定
+  modalStartDate.value = dateKey;
+  modalEndDate.value = dateKey;
   modalLocation.value = '';
   modalStartTime.value = '09:00';
   modalEndTime.value = '17:00';
