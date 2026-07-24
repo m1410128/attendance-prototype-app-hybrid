@@ -74,6 +74,8 @@ let scheduleData = {};
 
 // localStorage キー
 const STORAGE_KEY = 'workSchedule';
+// GAS Web App の URL を設定すると、登録内容を一括で送信できる。
+const GAS_WEB_APP_URL = 'https://script.googleusercontent.com/macros/echo?user_content_key=AUkAhnSKVcfj80IXrcIqqu2u90jSv5ByhY3XMUstlNvyJUlxLGgJhuPcVv5D7Mon30l2VwWiaIV_xo-PKbMUpQwxva4jlNLrt7mtFQPy208G9_SQl0OVr28Wvx19g2Ub6_6pHy97clMimtp6uBWAahMGPeE7HE29QBBAuFTftGdtJFkv6nNVQw2BoBoHF-Nq200yGK4gyHJN-H3zH9r6AtYdop1gHvSglnQXum_5LcPf9RpSAIln0kzMEoQNO8XiEujI9uHPQViVkJg67UKLCQE&lib=Mk_dpYyL9pna67Wmg_3CM5lMOtaQ-MCV5';
 
 // 初期化
 function init() {
@@ -349,7 +351,50 @@ function saveEntryForDate(date, entry) {
   };
 }
 
-function saveDetailForm(status) {
+function normalizeStatusForGas(status) {
+  if (status === 'confirmed') return '確定';
+  return '予定';
+}
+
+function buildScheduleRecordForDate(date, entry) {
+  return {
+    employee: entry.employee || selectedEmployee,
+    date: formatDateKey(date),
+    startTime: entry.startTime || '',
+    endTime: entry.endTime || '',
+    location: entry.location || '',
+    remarks: entry.remarks || '',
+    status: normalizeStatusForGas(entry.status)
+  };
+}
+
+// GASへJSON配列を1回だけ送信する。
+async function postScheduleRecordsToGas(records) {
+  if (!GAS_WEB_APP_URL) {
+    console.warn('GAS Web App URL is not configured. Skipping POST.');
+    return null;
+  }
+
+  const response = await fetch(GAS_WEB_APP_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      operation: 'save',
+      records,
+    }),
+  });
+
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok || result.ok === false) {
+    throw new Error(result.error || 'GASへの送信に失敗しました。');
+  }
+
+  return result;
+}
+
+async function saveDetailForm(status) {
   if (!selectedEmployee || !selectedMonthKey) return;
 
   const startDateValue = modalStartDate.value;
@@ -379,12 +424,21 @@ function saveDetailForm(status) {
     remarks: modalRemarks.value
   };
 
+  const records = [];
   for (let current = new Date(startDate); current <= endDate; current.setDate(current.getDate() + 1)) {
     saveEntryForDate(current, entry);
+    records.push(buildScheduleRecordForDate(current, entry));
   }
 
   closeDetailModal();
   renderCalendar();
+
+  try {
+    await postScheduleRecordsToGas(records);
+  } catch (error) {
+    console.error(error);
+    alert(error.message || 'GASへの送信に失敗しました。');
+  }
 }
 
 function openCancelModal() {

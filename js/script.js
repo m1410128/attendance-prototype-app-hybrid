@@ -56,6 +56,7 @@ const monthList = Array.from({ length: 12 }, (_, index) => {
 let activeMonthKey = `${currentYear}-${String(currentMonth).padStart(2, '0')}`;
 
 let scheduleData = {};
+const GAS_WEB_APP_URL = 'https://script.googleusercontent.com/macros/echo?user_content_key=AUkAhnSKVcfj80IXrcIqqu2u90jSv5ByhY3XMUstlNvyJUlxLGgJhuPcVv5D7Mon30l2VwWiaIV_xo-PKbMUpQwxva4jlNLrt7mtFQPy208G9_SQl0OVr28Wvx19g2Ub6_6pHy97clMimtp6uBWAahMGPeE7HE29QBBAuFTftGdtJFkv6nNVQw2BoBoHF-Nq200yGK4gyHJN-H3zH9r6AtYdop1gHvSglnQXum_5LcPf9RpSAIln0kzMEoQNO8XiEujI9uHPQViVkJg67UKLCQE&lib=Mk_dpYyL9pna67Wmg_3CM5lMOtaQ-MCV5';
 
 const currentMonthLabel = document.getElementById('currentMonthLabel');
 const openMonthModalButton = document.getElementById('openMonthModalButton');
@@ -84,9 +85,38 @@ if (menuButton && menuPanel && menuOverlay) {
   });
 }
 
-function loadScheduleData() {
-  const stored = localStorage.getItem('workSchedule');
-  scheduleData = stored ? JSON.parse(stored) : {};
+async function loadScheduleData() {
+  if (!GAS_WEB_APP_URL) {
+    console.warn('GAS Web App URL is not configured. Falling back to sample data.');
+    scheduleData = {};
+    renderCurrentMonthLabel();
+    renderScheduleTable();
+    return;
+  }
+
+  try {
+    const response = await fetch(GAS_WEB_APP_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ operation: 'list' }),
+    });
+
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok || result.ok === false) {
+      throw new Error(result.error || 'GASからデータを取得できませんでした。');
+    }
+
+    scheduleData = Array.isArray(result.reservations) ? result.reservations : [];
+    renderCurrentMonthLabel();
+    renderScheduleTable();
+  } catch (error) {
+    console.error(error);
+    scheduleData = {};
+    renderCurrentMonthLabel();
+    renderScheduleTable();
+  }
 }
 
 function getDaysInMonth(monthKey) {
@@ -99,15 +129,19 @@ function getWeekday(year, month, day) {
 }
 
 function getEntry(employee, day) {
-  // localStorage のデータを優先的に使用
-  if (
-    scheduleData[activeMonthKey] &&
-    scheduleData[activeMonthKey][employee] &&
-    scheduleData[activeMonthKey][employee][day]
-  ) {
-    return scheduleData[activeMonthKey][employee][day];
+  const monthKey = activeMonthKey;
+  const targetDate = `${monthKey}-${String(day).padStart(2, '0')}`;
+
+  const entry = Array.isArray(scheduleData)
+    ? scheduleData.find((item) => {
+        return String(item.employee || '') === String(employee) && String(item.date || '') === String(targetDate);
+      })
+    : null;
+
+  if (entry) {
+    return entry;
   }
-  // フォールバック：sampleSchedule を使用
+
   return (sampleSchedule[activeMonthKey] && sampleSchedule[activeMonthKey][employee] && sampleSchedule[activeMonthKey][employee][day]) || null;
 }
 
@@ -286,5 +320,3 @@ modalOverlay.addEventListener('click', (event) => {
 });
 
 loadScheduleData();
-renderCurrentMonthLabel();
-renderScheduleTable();
