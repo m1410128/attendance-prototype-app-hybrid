@@ -56,7 +56,7 @@ const monthList = Array.from({ length: 12 }, (_, index) => {
 let activeMonthKey = `${currentYear}-${String(currentMonth).padStart(2, '0')}`;
 
 let scheduleData = {};
-const GAS_WEB_APP_URL = 'https://script.googleusercontent.com/macros/echo?user_content_key=AUkAhnSKVcfj80IXrcIqqu2u90jSv5ByhY3XMUstlNvyJUlxLGgJhuPcVv5D7Mon30l2VwWiaIV_xo-PKbMUpQwxva4jlNLrt7mtFQPy208G9_SQl0OVr28Wvx19g2Ub6_6pHy97clMimtp6uBWAahMGPeE7HE29QBBAuFTftGdtJFkv6nNVQw2BoBoHF-Nq200yGK4gyHJN-H3zH9r6AtYdop1gHvSglnQXum_5LcPf9RpSAIln0kzMEoQNO8XiEujI9uHPQViVkJg67UKLCQE&lib=Mk_dpYyL9pna67Wmg_3CM5lMOtaQ-MCV5';
+const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzgoy5Vzl-DHhb3zXGkDN5Y5vbDLO6VeQDcf49g-NO8F69C5Bipqk1Sv6ZRrkFF2QQ/exec';
 
 const currentMonthLabel = document.getElementById('currentMonthLabel');
 const openMonthModalButton = document.getElementById('openMonthModalButton');
