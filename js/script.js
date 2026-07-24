@@ -97,8 +97,9 @@ async function loadScheduleData() {
   try {
     const response = await fetch(GAS_WEB_APP_URL, {
       method: 'POST',
+      mode: 'cors',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'text/plain;charset=UTF-8',
       },
       body: JSON.stringify({ operation: 'list' }),
     });
