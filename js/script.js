@@ -55,7 +55,8 @@ const monthList = Array.from({ length: 12 }, (_, index) => {
 
 let activeMonthKey = `${currentYear}-${String(currentMonth).padStart(2, '0')}`;
 
-let scheduleData = {};
+let scheduleData = [];
+let scheduleDataIndex = {};
 const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzgoy5Vzl-DHhb3zXGkDN5Y5vbDLO6VeQDcf49g-NO8F69C5Bipqk1Sv6ZRrkFF2QQ/exec';
 
 const currentMonthLabel = document.getElementById('currentMonthLabel');
@@ -110,14 +111,34 @@ async function loadScheduleData() {
     }
 
     scheduleData = Array.isArray(result.reservations) ? result.reservations : [];
+    scheduleDataIndex = buildScheduleIndex(scheduleData);
     renderCurrentMonthLabel();
     renderScheduleTable();
   } catch (error) {
     console.error(error);
     scheduleData = {};
+    scheduleDataIndex = {};
     renderCurrentMonthLabel();
     renderScheduleTable();
   }
+}
+
+function buildScheduleIndex(data) {
+  const index = {};
+  if (!Array.isArray(data)) return index;
+
+  data.forEach((item) => {
+    const date = String(item.date || '').trim();
+    const employee = String(item.employee || '').trim();
+    if (!date || !employee) return;
+
+    if (!index[date]) {
+      index[date] = {};
+    }
+    index[date][employee] = item;
+  });
+
+  return index;
 }
 
 function getDaysInMonth(monthKey) {
@@ -133,10 +154,8 @@ function getEntry(employee, day) {
   const monthKey = activeMonthKey;
   const targetDate = `${monthKey}-${String(day).padStart(2, '0')}`;
 
-  const entry = Array.isArray(scheduleData)
-    ? scheduleData.find((item) => {
-        return String(item.employee || '') === String(employee) && String(item.date || '') === String(targetDate);
-      })
+  const entry = scheduleDataIndex[targetDate]
+    ? scheduleDataIndex[targetDate][employee] || null
     : null;
 
   if (entry) {
