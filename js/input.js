@@ -453,7 +453,7 @@ function closeCancelModal() {
   cancelModalOverlay.classList.add('hidden');
 }
 
-function executeCancel() {
+async function executeCancel() {
   if (!cancelDate.value) {
     alert('取消日を入力してください。');
     return;
@@ -470,6 +470,24 @@ function executeCancel() {
     scheduleData[targetMonthKey][selectedEmployee] &&
     scheduleData[targetMonthKey][selectedEmployee][targetDay]
   ) {
+    // First request GAS to delete sheet rows for this date + employee
+    try {
+      const resp = await fetch(GAS_WEB_APP_URL, {
+        method: 'POST',
+        mode: 'cors',
+        headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+        body: JSON.stringify({ operation: 'deleteByDateEmployee', date: cancelDate.value, employee: selectedEmployee }),
+      });
+      const result = await resp.json().catch(() => ({}));
+      if (!resp.ok || result.ok === false) {
+        throw new Error(result.error || 'GAS deletion failed');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('スプレッドシートの削除に失敗しました: ' + (err.message || err));
+      return;
+    }
+
     delete scheduleData[targetMonthKey][selectedEmployee][targetDay];
     localStorage.setItem(STORAGE_KEY, JSON.stringify(scheduleData));
   }

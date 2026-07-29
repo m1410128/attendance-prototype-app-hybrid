@@ -260,7 +260,8 @@ function renderScheduleTable() {
   thead.innerHTML = '';
   tbody.innerHTML = '';
 
-  // ===== ヘッダー行の作成 =====
+  // ===== ヘッダー行を DocumentFragment で作成 =====
+  const headerFragment = document.createDocumentFragment();
   const headerRow = document.createElement('tr');
   const firstHeader = document.createElement('th');
   firstHeader.textContent = '日付';
@@ -272,9 +273,12 @@ function renderScheduleTable() {
     headerRow.appendChild(th);
   });
 
-  thead.appendChild(headerRow);
+  headerFragment.appendChild(headerRow);
+  thead.appendChild(headerFragment);
 
-  // ===== 本体 =====
+  // ===== 本体を DocumentFragment でバッチ追加 =====
+  const bodyFragment = document.createDocumentFragment();
+
   for (let day = 1; day <= daysInMonth; day += 1) {
     const holidayKey = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     const isHoliday = holidaySet.has(holidayKey);
@@ -297,8 +301,10 @@ function renderScheduleTable() {
       );
     });
 
-    tbody.appendChild(row);
+    bodyFragment.appendChild(row);
   }
+
+  tbody.appendChild(bodyFragment);
 }
 
 function openDetailModal(employee, day, entry) {

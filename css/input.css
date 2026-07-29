@@ -254,13 +254,13 @@
 }
 
 /* モーダル（既存スタイルの調整） */
-.modal-card {
+#detailModalOverlay .modal-card {
   max-height: 85vh;
   display: flex;
   flex-direction: column;
 }
 
-.modal-content {
+#detailModalOverlay .modal-content {
   flex: 1;
   overflow-y: auto;
   padding-right: 12px;
@@ -274,7 +274,7 @@
   flex-shrink: 0;
 }
 
-.modal-content::-webkit-scrollbar {
+#detailModalOverlay .modal-content::-webkit-scrollbar {
   width: 6px;
 }
 
