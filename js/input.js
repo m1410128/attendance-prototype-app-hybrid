@@ -335,8 +335,11 @@ function formatDateKey(date) {
 }
 
 function saveEntryForDate(date, entry) {
+  // ローカル状態に予約IDを保持し、編集時にも同じIDを維持する。
   const monthKey = formatDateKey(date).slice(0, 7);
   const dayKey = String(date.getDate());
+  const existingEntry = getScheduleEntry(selectedEmployee, dayKey);
+  const reservationId = String(existingEntry?.reservationId || entry.reservationId || '').trim();
 
   if (!scheduleData[monthKey]) {
     scheduleData[monthKey] = {};
@@ -347,8 +350,16 @@ function saveEntryForDate(date, entry) {
 
   scheduleData[monthKey][selectedEmployee][dayKey] = {
     ...entry,
+    reservationId: reservationId || generateReservationId(),
     date: formatDateKey(date)
   };
+}
+
+function generateReservationId() {
+  // 新規予約に対して、GAS側で更新・削除できるよう予約IDを発行する。
+  const timestamp = Date.now().toString();
+  const randomPart = Math.random().toString(36).slice(2, 8).toUpperCase();
+  return `R-${timestamp}-${randomPart}`;
 }
 
 function normalizeStatusForGas(status) {
@@ -357,7 +368,9 @@ function normalizeStatusForGas(status) {
 }
 
 function buildScheduleRecordForDate(date, entry) {
+  // GASへ送る予約レコードに予約IDを含め、更新時に対象行を特定できるようにする。
   return {
+    reservationId: String(entry.reservationId || '').trim(),
     employee: entry.employee || selectedEmployee,
     date: formatDateKey(date),
     startTime: entry.startTime || '',
@@ -427,8 +440,15 @@ async function saveDetailForm(status) {
 
   const records = [];
   for (let current = new Date(startDate); current <= endDate; current.setDate(current.getDate() + 1)) {
-    saveEntryForDate(current, entry);
-    records.push(buildScheduleRecordForDate(current, entry));
+    const dayKey = String(current.getDate());
+    const existingEntry = getScheduleEntry(selectedEmployee, dayKey);
+    const entryForDate = {
+      ...entry,
+      reservationId: String(existingEntry?.reservationId || entry.reservationId || '').trim() || generateReservationId(),
+    };
+
+    saveEntryForDate(current, entryForDate);
+    records.push(buildScheduleRecordForDate(current, entryForDate));
   }
 
   closeDetailModal();
@@ -465,18 +485,25 @@ async function executeCancel() {
 
   if (!confirmed) return;
 
-  if (
-    scheduleData[targetMonthKey] &&
+  const targetEntry = scheduleData[targetMonthKey] &&
     scheduleData[targetMonthKey][selectedEmployee] &&
-    scheduleData[targetMonthKey][selectedEmployee][targetDay]
-  ) {
-    // First request GAS to delete sheet rows for this date + employee
+    scheduleData[targetMonthKey][selectedEmployee][targetDay];
+
+  if (targetEntry) {
+    // 予約IDを使って削除対象を特定し、即時送信のまま削除する。
+    const reservationIds = String(targetEntry.reservationId || '').trim()
+      ? [String(targetEntry.reservationId).trim()]
+      : [];
+
     try {
       const resp = await fetch(GAS_WEB_APP_URL, {
         method: 'POST',
         mode: 'cors',
         headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
-        body: JSON.stringify({ operation: 'deleteByDateEmployee', date: cancelDate.value, employee: selectedEmployee }),
+        body: JSON.stringify({
+          operation: 'deleteByIds',
+          reservationIds: reservationIds,
+        }),
       });
       const result = await resp.json().catch(() => ({}));
       if (!resp.ok || result.ok === false) {

@@ -105,17 +105,31 @@ async function loadScheduleData() {
       body: JSON.stringify({ operation: 'list' }),
     });
 
+    console.log('[DEBUG] GAS Response Status:', response.ok, response.status);
+
     const result = await response.json().catch(() => ({}));
+    console.log('[DEBUG] GAS Response Result:', result);
     if (!response.ok || result.ok === false) {
       throw new Error(result.error || 'GASからデータを取得できませんでした。');
     }
 
+    console.log('[DEBUG] Is reservations array?', Array.isArray(result.reservations));
+    console.log('[DEBUG] Reservations count:', result.reservations ? result.reservations.length : 0);
+    if (result.reservations && result.reservations.length > 0) {
+      console.log('[DEBUG] First reservation:', result.reservations[0]);
+    }
+
     scheduleData = Array.isArray(result.reservations) ? result.reservations : [];
+    console.log('[DEBUG] scheduleData assigned:', scheduleData.length, 'items');
     scheduleDataIndex = buildScheduleIndex(scheduleData);
+    console.log('[DEBUG] scheduleDataIndex keys:', Object.keys(scheduleDataIndex));
+    console.log('[DEBUG] activeMonthKey:', activeMonthKey);
     renderCurrentMonthLabel();
     renderScheduleTable();
   } catch (error) {
     console.error(error);
+    console.log('[DEBUG] Error - scheduleData fallback:', scheduleData);
+    console.log('[DEBUG] Error - scheduleDataIndex fallback:', scheduleDataIndex);
     scheduleData = {};
     scheduleDataIndex = {};
     renderCurrentMonthLabel();
