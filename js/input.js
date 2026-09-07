@@ -402,10 +402,29 @@ async function postScheduleRecordsToGas(records) {
 
   const result = await response.json().catch(() => ({}));
   if (!response.ok || result.ok === false) {
-    throw new Error(result.error || 'GASへの送信に失敗しました。');
+    const error = new Error(result.error || 'GASへの送信に失敗しました。');
+    error.conflicts = Array.isArray(result.conflicts) ? result.conflicts : [];
+    throw error;
   }
 
   return result;
+}
+
+function formatGasConflictMessage(error) {
+  const conflicts = Array.isArray(error?.conflicts) ? error.conflicts : [];
+  if (!conflicts.length) {
+    return error?.message || 'GASへの送信に失敗しました。';
+  }
+
+  const conflictText = conflicts.slice(0, 3).map((conflict) => {
+    const reservationId = conflict.reservationId ? String(conflict.reservationId) : '不明';
+    const vehicle = conflict.vehicle || '車両';
+    const startDateTime = conflict.startDateTime ? conflict.startDateTime.replace('T', ' ') : '不明';
+    const endDateTime = conflict.endDateTime ? conflict.endDateTime.replace('T', ' ') : '不明';
+    return `・${vehicle} ${startDateTime} ～ ${endDateTime}（予約ID: ${reservationId}）`;
+  }).join('\n');
+
+  return `この車両は既存予約と時間が重複しています。\n${conflictText}`;
 }
 
 async function saveDetailForm(status) {
@@ -439,6 +458,7 @@ async function saveDetailForm(status) {
   };
 
   const records = [];
+  const pendingEntries = [];
   for (let current = new Date(startDate); current <= endDate; current.setDate(current.getDate() + 1)) {
     const dayKey = String(current.getDate());
     const existingEntry = getScheduleEntry(selectedEmployee, dayKey);
@@ -447,18 +467,26 @@ async function saveDetailForm(status) {
       reservationId: String(existingEntry?.reservationId || entry.reservationId || '').trim() || generateReservationId(),
     };
 
-    saveEntryForDate(current, entryForDate);
     records.push(buildScheduleRecordForDate(current, entryForDate));
+    pendingEntries.push({ date: new Date(current), entry: entryForDate });
   }
 
   closeDetailModal();
-  renderCalendar();
 
   try {
-    await postScheduleRecordsToGas(records);
+    const result = await postScheduleRecordsToGas(records);
+    if (!result || result.ok === false) {
+      throw new Error((result && result.error) || 'GASへの送信に失敗しました。');
+    }
+
+    pendingEntries.forEach(({ date, entry }) => {
+      saveEntryForDate(date, entry);
+    });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(scheduleData));
+    renderCalendar();
   } catch (error) {
     console.error(error);
-    alert(error.message || 'GASへの送信に失敗しました。');
+    alert(formatGasConflictMessage(error));
   }
 }
 
