@@ -325,6 +325,7 @@ function openDetailModal(employee, day, entry) {
   modalContent.innerHTML = '';
   const labelMap = [
     { label: '社員名', value: employee },
+    { label: '車両', value: entry?.vehicle || '未入力' },
     { label: '期間', value: formatDateRange(entry, day) },
     { label: '開始時刻', value: entry?.startTime || entry?.time?.split('-')[0] || '未入力' },
     { label: '終了時刻', value: entry?.endTime || entry?.time?.split('-')[1] || '未入力' },

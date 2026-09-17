@@ -52,6 +52,7 @@ const modalConfirmedButton = document.getElementById('modalConfirmedButton');
 const modalEmployeeName = document.getElementById('modalEmployeeName');
 const modalStartDate = document.getElementById('modalStartDate');
 const modalEndDate = document.getElementById('modalEndDate');
+const modalVehicle = document.getElementById('modalVehicle');
 const modalLocation = document.getElementById('modalLocation');
 const modalStartTime = document.getElementById('modalStartTime');
 const modalEndTime = document.getElementById('modalEndTime');
@@ -310,6 +311,7 @@ function openDetailModal(dateKey) {
   // 日付はカレンダーでクリックした値に設定
   modalStartDate.value = dateKey;
   modalEndDate.value = dateKey;
+  modalVehicle.value = '';
   modalLocation.value = '';
   modalStartTime.value = '09:00';
   modalEndTime.value = '17:00';
@@ -368,10 +370,11 @@ function normalizeStatusForGas(status) {
 }
 
 function buildScheduleRecordForDate(date, entry) {
-  // GASへ送る予約レコードに予約IDを含め、更新時に対象行を特定できるようにする。
+  // GASへ送る予約レコードに予約IDと車両情報を含め、重複判定と更新処理を正しく行えるようにする。
   return {
     reservationId: String(entry.reservationId || '').trim(),
     employee: entry.employee || selectedEmployee,
+    vehicle: String(entry.vehicle || '').trim(),
     date: formatDateKey(date),
     startTime: entry.startTime || '',
     endTime: entry.endTime || '',
@@ -438,6 +441,11 @@ async function saveDetailForm(status) {
     return;
   }
 
+  if (!modalVehicle.value.trim()) {
+    alert('車両名を入力してください。');
+    return;
+  }
+
   const startDate = parseLocalDate(startDateValue);
   const endDate = parseLocalDate(endDateValue);
 
@@ -448,6 +456,7 @@ async function saveDetailForm(status) {
 
   const entry = {
     employee: selectedEmployee,
+    vehicle: modalVehicle.value,
     startDate: startDateValue,
     endDate: endDateValue,
     location: modalLocation.value,
