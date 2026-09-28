@@ -79,8 +79,8 @@ const STORAGE_KEY = 'workSchedule';
 const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzgoy5Vzl-DHhb3zXGkDN5Y5vbDLO6VeQDcf49g-NO8F69C5Bipqk1Sv6ZRrkFF2QQ/exec';
 
 // 初期化
-function init() {
-  loadScheduleData();
+async function init() {
+  await loadScheduleData();
   setupEventListeners();
   renderMonthSelector();
 }
@@ -100,9 +100,61 @@ if (menuButton && menuPanel && menuOverlay) {
   });
 }
 
-function loadScheduleData() {
-  const stored = localStorage.getItem(STORAGE_KEY);
-  scheduleData = stored ? JSON.parse(stored) : {};
+// GASのlist APIから取得した予約を入力画面で扱う形式に変換する。
+function buildScheduleDataFromReservations(reservations) {
+  const data = {};
+  if (!Array.isArray(reservations)) return data;
+
+  reservations.forEach((item) => {
+    const date = String(item.date || '').trim();
+    const employee = String(item.employee || '').trim();
+    if (!date || !employee) return;
+
+    const monthKey = date.slice(0, 7);
+    const dayKey = String(parseInt(date.slice(8, 10), 10));
+    if (!data[monthKey]) data[monthKey] = {};
+    if (!data[monthKey][employee]) data[monthKey][employee] = {};
+
+    data[monthKey][employee][dayKey] = {
+      ...item,
+      startDate: item.startDate || date,
+      endDate: item.endDate || date,
+      status: item.status === 'confirmed' || item.status === '確定'
+        ? 'confirmed'
+        : 'planned'
+    };
+  });
+
+  return data;
+}
+
+// GASのlist APIから予約データを取得し、入力画面の状態を更新する。
+async function loadScheduleData() {
+  if (!GAS_WEB_APP_URL) {
+    scheduleData = {};
+    return;
+  }
+
+  try {
+    const response = await fetch(GAS_WEB_APP_URL, {
+      method: 'POST',
+      mode: 'cors',
+      headers: {
+        'Content-Type': 'text/plain;charset=UTF-8',
+      },
+      body: JSON.stringify({ operation: 'list' }),
+    });
+
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok || result.ok === false) {
+      throw new Error(result.error || 'GASからデータを取得できませんでした。');
+    }
+
+    scheduleData = buildScheduleDataFromReservations(result.reservations);
+  } catch (error) {
+    console.error(error);
+    scheduleData = {};
+  }
 }
 
 function setupEventListeners() {
@@ -306,16 +358,17 @@ function getDefaultDateForSelectedMonth() {
 function openDetailModal(dateKey) {
   if (!selectedEmployee || !selectedMonthKey) return;
 
-  const defaultDate = getDefaultDateForSelectedMonth();
+  const day = parseInt(dateKey.slice(8, 10), 10);
+  const existingEntry = getScheduleEntry(selectedEmployee, day);
   modalEmployeeName.textContent = selectedEmployee;
   // 日付はカレンダーでクリックした値に設定
-  modalStartDate.value = dateKey;
-  modalEndDate.value = dateKey;
-  modalVehicle.value = '';
-  modalLocation.value = '';
-  modalStartTime.value = '09:00';
-  modalEndTime.value = '17:00';
-  modalRemarks.value = '';
+  modalStartDate.value = existingEntry?.startDate || dateKey;
+  modalEndDate.value = existingEntry?.endDate || dateKey;
+  modalVehicle.value = existingEntry?.vehicle || '';
+  modalLocation.value = existingEntry?.location || '';
+  modalStartTime.value = existingEntry?.startTime || '09:00';
+  modalEndTime.value = existingEntry?.endTime || '17:00';
+  modalRemarks.value = existingEntry?.remarks || '';
 
   detailModalOverlay.classList.remove('hidden');
 }
